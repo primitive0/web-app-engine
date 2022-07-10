@@ -1,0 +1,41 @@
+язык со строгой типизацией
+
+Целые числовые типы данных:
+byte
+short, ushort
+int, uint
+long, ulong
+
+Литерал - implicit cast
+explicit:
+byte(value)
+
+Типы данных с плавующей точкой:
+double, financial
+
+Типы с плавующей точкой:
+double - 0.0, financial - 0.0
+
+Логический тип - bool
+true, false
+
+Строка - string, символ - rune
+
+string - ""
+rune - ''
+
+Динамическое чёрте-што - dyn
+
+dyn foo = {
+    name: int(-5)
+}
+
+dyn bar = [1, "2", true]
+
+class LoginRequest {
+    string username,
+    string password
+}
+
+Составные типы данных: - на потом
+Map, List, Set

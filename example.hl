@@ -1,0 +1,12 @@
+[]int array = [1, 2, 3, 4, 5]
+[string][int]int map = {1: 2, 3: 4}
+
+class Foo {
+    string{asciiOnly: true} field1,
+    string{regex: "bruh"} field2
+}
+
+@get("/foo")
+Response () {
+    return Response.OK;
+}

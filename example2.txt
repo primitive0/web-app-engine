@@ -1,0 +1,11 @@
+dyn LoginRequest {
+    @validate({min: 3, max: 20, asciiOnly: true})
+    string username,
+    @validate({лень писать})
+    string password
+}
+
+@get("/auth/login")
+void (@body LoginRequest payload) {
+
+}
