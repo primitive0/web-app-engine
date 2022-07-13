@@ -1,4 +1,0 @@
-/home/me/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/221.5921.27/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/home/me/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/221.5921.27/bin/ninja/linux/ninja -DCMAKE_C_COMPILER=clang-14 -DCMAKE_CXX_COMPILER=clang++-14 -G Ninja -S /mnt/ntfs/data/programming/projects/http_lang -B /mnt/ntfs/data/programming/projects/http_lang/cmake-build-debug
--- Configuring done
--- Generating done
--- Build files have been written to: /mnt/ntfs/data/programming/projects/http_lang/cmake-build-debug

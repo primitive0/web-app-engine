@@ -4,27 +4,22 @@ function simpleTokenMatcher(matcherId, tokenId) {
     return {
         id: matcherId,
         match(seq) {
-            let token = seq.next();
-            return token.id == tokenId && token;
+            let token;
+            while (true) {
+                token = seq.next();
+                if (!token) {
+                    return false;
+                }
+                if (token.id == tokens.SEP || token.id == tokens.LINE_BREAK) {
+                    continue;
+                }
+                return token.id == tokenId && token;
+            }
         }
     };
 }
 
-function lineEnd(matcher) {
-    return {
-        id: 'LINE_MAY_BREAK',
-        match(seq) {
-            let token = seq.seek();
-            if (token.id == tokens.LINE_BREAK) {
-                seq.skip();
-            }
-            return matcher.match(seq);
-        }
-    }
-}
-
 const tm = {
-    LINE_BREAK: simpleTokenMatcher('LINE_BREAK', tokens.LINE_BREAK),
     IDENT: simpleTokenMatcher('IDENT', tokens.IDENT),
     ASSIGN: simpleTokenMatcher('ASSIGN', tokens.ASSIGN),
     LITERAL_INTEGER: simpleTokenMatcher('LITERAL_INTEGER', tokens.LITERAL_INTEGER),
@@ -32,7 +27,7 @@ const tm = {
     PAREN_CLOSE: simpleTokenMatcher('PAREN_CLOSE', tokens.PAREN_CLOSE),
     BRACE_OPEN: simpleTokenMatcher('BRACE_OPEN', tokens.BRACE_OPEN),
     BRACE_CLOSE: simpleTokenMatcher('BRACE_CLOSE', tokens.BRACE_CLOSE),
-    SEND: {
+    CBREAK: {
         id: 'STATEMENT_END',
         match(seq) {
             let token = seq.next();
@@ -45,15 +40,14 @@ const tm = {
 
 const MATCHERS = {
     'function_declaration': {
-        pattern: [tm.IDENT, tm.IDENT, tm.PAREN_OPEN, tm.PAREN_CLOSE, lineEnd(tm.BRACE_OPEN), lineEnd(tm.BRACE_CLOSE)],
+        pattern: [tm.IDENT, tm.IDENT, tm.PAREN_OPEN, tm.PAREN_CLOSE, tm.BRACE_OPEN, tm.BRACE_CLOSE, tm.CBREAK],
         emit(tokens) {
             return {id: 'function_declaration'};
         }
     },
     'variable_declaration': {
-        pattern: [tm.IDENT, tm.IDENT, tm.ASSIGN, tm.LITERAL_INTEGER, tm.SEND],
+        pattern: [tm.IDENT, tm.IDENT, tm.ASSIGN, tm.LITERAL_INTEGER, tm.CBREAK],
         emit(tokens) {
-            // T a = 1
             let type = tokens[0].name;
             let name = tokens[1].name;
             let value = tokens[3].value;
@@ -81,16 +75,11 @@ class TokenSeq {
     seek() {
         let token;
         if (this.pos == this.tokens.length) {
-            while (true) {
-                token = this.lexer.next();
-                if (token == null) {
-                    return null;
-                } else if (token.id == tokens.SEP) {
-                    continue;
-                }
-                this.tokens.push(token);
-                break;
+            token = this.lexer.next();
+            if (!token) {
+                return null;
             }
+            this.tokens.push(token);
         } else {
             token = this.tokens[this.pos];
         }
@@ -114,7 +103,6 @@ function matchPattern(seq, pattern) {
     for (let pm of pattern) {
         let token = pm.match(seq);
         if (!token) {
-            seq.reset();
             return false;
         }
         matched.push(token);
@@ -128,28 +116,25 @@ function buildAST(lexer) {
 
     const seq = new TokenSeq(lexer);
 
-    let nextToken;
-    while ((nextToken = seq.seek()).id != tokens.EOF) {
-        if (nextToken.id == tokens.LINE_BREAK) {
-            seq.skip();
-            seq.pop();
-        } else {
-            let matched;
-            for (const matcher of Object.values(MATCHERS)) {
-                matched = matchPattern(seq, matcher.pattern);
-                if (matched) {
-                    let astNode = matcher.emit(matched);
-                    ast.push(astNode);
-                    seq.pop();
-                    break;
-                } else {
-                    seq.reset();
-                }
-            }
-            if (!matched) {
-                throw Error('ast building error');
+    let nextToken = seq.seek();
+    while (nextToken && nextToken.id != tokens.EOF) {
+        let matched;
+        for (const matcher of Object.values(MATCHERS)) {
+            matched = matchPattern(seq, matcher.pattern);
+            if (matched) {
+                let astNode = matcher.emit(matched);
+                ast.push(astNode);
+                seq.pop();
+                break;
+            } else {
+                seq.reset();
             }
         }
+        if (!matched) {
+            throw Error('ast building error');
+        }
+
+        nextToken = seq.seek();
     }
 
     return ast;
