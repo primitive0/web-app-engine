@@ -1,0 +1,19 @@
+value class Location {
+    int x,
+    int y,
+    int z
+}
+
+@table("world")
+interface WorldRepository {
+
+    @query("SELECT x, y, z FROM $table")
+    []Location findLocations()
+}
+
+void main() {
+    WorldRepository repo = Repositories.implementation<WorldRepository>()
+    for (Location loc : repo.findLocations()) {
+        print(loc)
+    }
+}

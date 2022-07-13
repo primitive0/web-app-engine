@@ -1,0 +1,1 @@
+alias Password<..., uint min, uint max> = string<min: min, max: max, regex: "...">

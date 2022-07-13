@@ -1,0 +1,7 @@
+# compiler output
+transpiler-rs/target/
+cmake-build-debug/
+
+# IDEs files
+.idea/
+.vscode/

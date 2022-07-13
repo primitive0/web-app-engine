@@ -1,42 +1,5 @@
-const {tokens} = require('./lexer');
-
-function simpleTokenMatcher(matcherId, tokenId) {
-    return {
-        id: matcherId,
-        match(seq) {
-            let token;
-            while (true) {
-                token = seq.next();
-                if (!token) {
-                    return false;
-                }
-                if (token.id == tokens.SEP || token.id == tokens.LINE_BREAK) {
-                    continue;
-                }
-                return token.id == tokenId && token;
-            }
-        }
-    };
-}
-
-const tm = {
-    IDENT: simpleTokenMatcher('IDENT', tokens.IDENT),
-    ASSIGN: simpleTokenMatcher('ASSIGN', tokens.ASSIGN),
-    LITERAL_INTEGER: simpleTokenMatcher('LITERAL_INTEGER', tokens.LITERAL_INTEGER),
-    PAREN_OPEN: simpleTokenMatcher('PAREN_OPEN', tokens.PAREN_OPEN),
-    PAREN_CLOSE: simpleTokenMatcher('PAREN_CLOSE', tokens.PAREN_CLOSE),
-    BRACE_OPEN: simpleTokenMatcher('BRACE_OPEN', tokens.BRACE_OPEN),
-    BRACE_CLOSE: simpleTokenMatcher('BRACE_CLOSE', tokens.BRACE_CLOSE),
-    CBREAK: {
-        id: 'STATEMENT_END',
-        match(seq) {
-            let token = seq.next();
-            if (token.id == tokens.LINE_BREAK || token.id == tokens.EOF) {
-                return token;
-            }
-        }
-    }
-};
+const {tokens} = require('../lexer');
+const {tm, matchPattern} = require('./pattern');
 
 const MATCHERS = {
     'function_declaration': {
@@ -46,11 +9,8 @@ const MATCHERS = {
         }
     },
     'variable_declaration': {
-        pattern: [tm.IDENT, tm.IDENT, tm.ASSIGN, tm.LITERAL_INTEGER, tm.CBREAK],
-        emit(tokens) {
-            let type = tokens[0].name;
-            let name = tokens[1].name;
-            let value = tokens[3].value;
+        pattern: [tm.IDENT.req, tm.IDENT.req, tm.ASSIGN, tm.LITERAL_INTEGER.req, tm.CBREAK],
+        emit([type, name, value]) {
             return {id: 'variable_declaration', type, name, value};
         }
     }
@@ -95,20 +55,6 @@ class TokenSeq {
         this.pos++;
         return token;
     }
-}
-
-function matchPattern(seq, pattern) {
-    let matched = [];
-
-    for (let pm of pattern) {
-        let token = pm.match(seq);
-        if (!token) {
-            return false;
-        }
-        matched.push(token);
-    }
-
-    return matched;
 }
 
 function buildAST(lexer) {

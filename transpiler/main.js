@@ -13,7 +13,7 @@ console.log(`Parsing: ${fileToParse}`);
 
 const fs = require('fs');
 const {tokens, Lexer} = require('./lexer');
-const {buildAST} = require('./parser');
+const {buildAST} = require('./parser/parser');
 
 const fileContents = fs.readFileSync(fileToParse, 'utf8');
 

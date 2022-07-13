@@ -36,13 +36,13 @@ const LEXER_STATES = {
                     lineBreaks = isLineBreak(char);
                 } else {
                     if (lineBreaks && char == ' ' || !lineBreaks && isLineBreak(char)) {
-                        yield {id: lineBreaks ? tokens.LINE_BREAK : tokens.SEP, string: whitespaces};
+                        yield {id: lineBreaks ? tokens.LINE_BREAK : tokens.SEP, data: whitespaces};
                         whitespaces = '';
                     }
                 }
             }
             if (whitespaces.length != 0) {
-                yield {id: lineBreaks ? tokens.LINE_BREAK : tokens.SEP, string: whitespaces};
+                yield {id: lineBreaks ? tokens.LINE_BREAK : tokens.SEP, data: whitespaces};
             }
         }
     },
@@ -55,7 +55,7 @@ const LEXER_STATES = {
             if (!parsed) {
                 throw Error('failed to parse token');
             }
-            return {id: tokens.LITERAL_INTEGER, value: parsed};
+            return {id: tokens.LITERAL_INTEGER, data: parsed};
         }
     },
     'ident': {
@@ -63,7 +63,7 @@ const LEXER_STATES = {
             return /[A-Za-z]/.test(char) || (buf.length != 0 && /\d/.test(char));
         },
         emit(buf) {
-            return {id: tokens.IDENT, name: buf};
+            return {id: tokens.IDENT, data: buf};
         }
     },
     'assign': {

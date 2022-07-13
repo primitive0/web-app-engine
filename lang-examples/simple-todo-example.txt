@@ -1,0 +1,45 @@
+value class Note {
+    ulong id,
+    string text,
+    Instant createdAt
+}
+
+@table({name: "note"})
+interface NoteTable {
+
+    @sql("SELECT text, createdAt FROM $table")
+    []Note findNotes()
+
+    @sql("INSERT INTO $table VALUES ( $note.text, $note.createdAt )")
+    void insertNote(Note note)
+
+    @sql("SELECT 1 FROM $table WHERE ($table).id = $id")
+    bool noteExistById(ulong id)
+
+    @sql("DELETE FROM $table WHERE ($table).id = $id")
+    void deleteNoteById(ulong id)
+}
+
+@get("/notes")
+Response (NoteTable notes) {
+    return Response.body(notes.findNotes())
+}
+
+@post("/note/add")
+Response (@body dyn payload, NoteTable notes) {
+    { string<min: 3, max: 300> text } = undyn(payload)
+
+    notes.insertNote(Note(0, text, Instant.now))
+    return Response.OK
+}
+
+@delete("/note/delete")
+Response (@body dyn payload, NoteTable notes) {
+    { ulong id } = undyn(payload)
+    if notes.noteExistById(id) {
+        notes.deleteNoteById(id)
+        return Response.OK
+    } else {
+        return Response.NOT_FOUND.body("Note not found")
+    }
+}
