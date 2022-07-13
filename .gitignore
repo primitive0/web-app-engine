@@ -1,5 +1,5 @@
 # compiler output
-transpiler-rs/target/
+transpiler/target/
 cmake-build-debug/
 
 # IDEs files
