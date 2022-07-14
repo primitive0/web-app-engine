@@ -5,3 +5,5 @@ cmake-build-debug/
 # IDEs files
 .idea/
 .vscode/
+
+generated.c
