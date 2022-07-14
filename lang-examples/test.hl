@@ -1,6 +1,2 @@
 int test = 2
-void main() {
-
-}
-
-int test2 = 345
+int a = 34

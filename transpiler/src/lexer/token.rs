@@ -2,7 +2,8 @@ use std::array;
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub enum TokenKind {
-    Keyword,
+    KeywordVoid,
+    KeywordInt,
     Ident,
     Sep,
     Assign,
@@ -25,7 +26,11 @@ impl<'c> Token<'c> {
         Token { kind, string }
     }
 
-    pub fn string(&self) -> &'c str {
+    pub const fn kind(&self) -> TokenKind {
+        self.kind
+    }
+
+    pub const fn string(&self) -> &'c str {
         self.string
     }
 }
@@ -105,7 +110,8 @@ token_matcher! {
         }
         fn emit(buf: &str) -> Token {
             let kind = match buf {
-                "void" | "int" => TokenKind::Keyword,
+                "void" => TokenKind::KeywordVoid,
+                "int" => TokenKind::KeywordInt,
                 _ => TokenKind::Ident,
             };
             Token::of(kind, buf)
