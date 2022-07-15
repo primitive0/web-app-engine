@@ -59,7 +59,7 @@ impl<'c> Parser<'c> {
     fn next_nonsep_token(&mut self) -> Token<'c> {
         loop {
             let token = self.current_token();
-            if token.kind() != TokenKind::Sep {
+            if !matches!(token.kind(), TokenKind::Spaces | TokenKind::LineBreak) {
                 self.go_next();
                 return token;
             }
@@ -111,8 +111,7 @@ impl<'c> Parser<'c> {
 
     fn except_end(&mut self) -> Result<(), ParsingError> {
         let token = self.current_token();
-        // TODO: replace with line break
-        if matches!(token.kind(), TokenKind::Sep | TokenKind::Eof) {
+        if matches!(token.kind(), TokenKind::LineBreak | TokenKind::Eof) {
             self.go_next();
             Ok(())
         } else {

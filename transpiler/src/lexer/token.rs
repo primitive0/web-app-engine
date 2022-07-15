@@ -2,16 +2,18 @@ use std::array;
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub enum TokenKind {
+    Spaces,
+    LineBreak,
     KeywordVoid,
     KeywordInt,
     Ident,
-    Sep,
     Assign,
     LiteralInteger,
     ParenOpen,
     ParenClose,
     BraceOpen,
     BraceClose,
+    Sep,
     Eof,
 }
 
@@ -92,12 +94,20 @@ const fn is_line_break(char: char) -> bool {
 }
 
 token_matcher! {
-    Sep => {
+    Spaces => {
         fn check(_: &str, char: char) -> bool {
-            char == ' ' || is_line_break(char)
+            char == ' '
         }
         fn emit(buf: &str) -> Token {
-            Token::of(TokenKind::Sep, buf)
+            Token::of(TokenKind::Spaces, buf)
+        }
+    },
+    LineBreak => {
+        fn check(_: &str, char: char) -> bool {
+            is_line_break(char)
+        }
+        fn emit(buf: &str) -> Token {
+            Token::of(TokenKind::LineBreak, buf)
         }
     },
     KeywordOrIdent => {
