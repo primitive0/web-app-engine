@@ -1,6 +1,6 @@
+mod codegen;
 mod lexer;
 mod parser;
-mod codegen;
 
 use lexer::{Lexer, TOKEN_EOF};
 use std::env;
@@ -13,9 +13,9 @@ fn main() {
 
     let to_parse = fs::read_to_string(file_to_parse).expect("failed to read file");
 
-    let lexer = Lexer::new(to_parse.as_str());
+    let mut lexer = Lexer::new(to_parse.as_str());
     let ast = parser::build_ast(lexer).unwrap();
 
-    let code = codegen::generate_c_code(ast);
+    let code = codegen::generate_c_code(&ast);
     fs::write(out_file, code).expect("failed to write into file");
 }

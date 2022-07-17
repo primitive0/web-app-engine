@@ -8,7 +8,8 @@ pub enum TokenKind {
     KeywordInt,
     Ident,
     Assign,
-    LiteralInteger,
+    IntegerLiteral,
+    StringLiteral,
     ParenOpen,
     ParenClose,
     BraceOpen,
@@ -47,7 +48,7 @@ macro_rules! count {
 macro_rules! token_matcher {
     ( $(
         $variant:ident => {
-            fn check($check_buf:tt : &str, $check_character:tt : char) -> bool $check_body:block
+            fn check($check_buf:tt : &str, $check_char_count:tt : usize, $check_character:tt : char) -> bool $check_body:block
             fn emit($emit_buf:tt : &str) -> Token $emit_body:block
         }
        ),* ) => {
@@ -66,12 +67,12 @@ macro_rules! token_matcher {
                 ].into_iter()
             }
 
-            pub fn check(self, buf: &str, character: char) -> bool {
+            pub fn check(self, buf: &str, char_count: usize, character: char) -> bool {
                 match self {
                     TokenMatcher::Reset => false,
                     $( TokenMatcher::$variant => {
-                        fn check_($check_buf: &str, $check_character: char) -> bool $check_body
-                        check_(buf, character)
+                        fn check_($check_buf: &str, $check_char_count: usize, $check_character: char) -> bool $check_body
+                        check_(buf, char_count, character)
                     } ),*
                 }
             }
@@ -95,7 +96,7 @@ const fn is_line_break(char: char) -> bool {
 
 token_matcher! {
     Spaces => {
-        fn check(_: &str, char: char) -> bool {
+        fn check(_: &str, _: usize, char: char) -> bool {
             char == ' '
         }
         fn emit(buf: &str) -> Token {
@@ -103,7 +104,7 @@ token_matcher! {
         }
     },
     LineBreak => {
-        fn check(_: &str, char: char) -> bool {
+        fn check(_: &str, _: usize, char: char) -> bool {
             is_line_break(char)
         }
         fn emit(buf: &str) -> Token {
@@ -111,7 +112,7 @@ token_matcher! {
         }
     },
     KeywordOrIdent => {
-        fn check(buf: &str, char: char) -> bool {
+        fn check(buf: &str, _: usize, char: char) -> bool {
             if buf.is_empty() {
                 char.is_ascii_alphabetic()
             } else {
@@ -128,23 +129,35 @@ token_matcher! {
         }
     },
     Assign => {
-        fn check(buf: &str, char: char) -> bool {
+        fn check(buf: &str, _: usize, char: char) -> bool {
             buf.is_empty() && char == '='
         }
         fn emit(buf: &str) -> Token {
             Token::of(TokenKind::Assign, buf)
         }
     },
-    LiteralInteger => {
-        fn check(_: &str, char: char) -> bool {
+    IntegerLiteral => {
+        fn check(_: &str, _: usize, char: char) -> bool {
             char.is_ascii_digit()
         }
         fn emit(buf: &str) -> Token {
-            Token::of(TokenKind::LiteralInteger, buf)
+            Token::of(TokenKind::IntegerLiteral, buf)
+        }
+    },
+    StringLiteral => {
+        fn check(buf: &str, char_count: usize, char: char) -> bool {
+            match buf.chars().next_back() {
+                Some(last_char) if char_count != 1 => last_char != '"', // buf.len() > 1
+                None => char == '"', // buf is empty
+                _ => true, // buf.len() == 1
+            }
+        }
+        fn emit(buf: &str) -> Token {
+            Token::of(TokenKind::StringLiteral, buf)
         }
     },
     ParenOpen => {
-        fn check(buf: &str, char: char) -> bool {
+        fn check(buf: &str, _: usize, char: char) -> bool {
             buf.is_empty() && char == '('
         }
         fn emit(buf: &str) -> Token {
@@ -152,7 +165,7 @@ token_matcher! {
         }
     },
     ParenClose => {
-        fn check(buf: &str, char: char) -> bool {
+        fn check(buf: &str, _: usize, char: char) -> bool {
             buf.is_empty() && char == ')'
         }
         fn emit(buf: &str) -> Token {
@@ -160,7 +173,7 @@ token_matcher! {
         }
     },
     BraceOpen => {
-        fn check(buf: &str, char: char) -> bool {
+        fn check(buf: &str, _: usize, char: char) -> bool {
             buf.is_empty() && char == '{'
         }
         fn emit(buf: &str) -> Token {
@@ -168,11 +181,19 @@ token_matcher! {
         }
     },
     BraceClose => {
-        fn check(buf: &str, char: char) -> bool {
+        fn check(buf: &str, _: usize, char: char) -> bool {
             buf.is_empty() && char == '}'
         }
         fn emit(buf: &str) -> Token {
             Token::of(TokenKind::BraceClose, buf)
+        }
+    },
+    Sep => {
+        fn check(buf: &str, _: usize, char: char) -> bool {
+            buf.is_empty() && char == ','
+        }
+        fn emit(buf: &str) -> Token {
+            Token::of(TokenKind::Sep, buf)
         }
     }
 }

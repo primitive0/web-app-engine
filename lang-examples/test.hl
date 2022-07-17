@@ -1,2 +1,3 @@
-int test = 2
-int a = 34
+void main() {
+    print("foobar")
+}
