@@ -1,6 +1,6 @@
 # compiler output
 transpiler/target/
-cmake-build-debug/
+runtime/cmake-build-debug/
 
 # IDEs files
 .idea/
