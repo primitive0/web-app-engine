@@ -75,13 +75,13 @@ impl<'c> TokenSeq<'c> {
         token
     }
 
-    pub fn except_type(&mut self) -> Result<ast::Type<'c>> {
+    pub fn expect_type(&mut self) -> Result<ast::Type<'c>> {
         let token = self.next_solid_token();
         token_to_type(token)
             .ok_or(ParsingError::new(token.kind(), TYPE_TOKENS_EXPECTED))
     }
 
-    pub fn except_type_or_void(&mut self) -> Result<ast::TypeOrVoid<'c>> {
+    pub fn expect_type_or_void(&mut self) -> Result<ast::TypeOrVoid<'c>> {
         let token = self.next_solid_token();
         match token_to_type(token) {
             Some(t) => Ok(ast::TypeOrVoid::Type(t)),
@@ -96,14 +96,14 @@ impl<'c> TokenSeq<'c> {
         }
     }
 
-    pub fn except_ident(&mut self) -> Result<ast::Ident<'c>> {
+    pub fn expect_ident(&mut self) -> Result<ast::Ident<'c>> {
         let token = self.next_solid_token();
         match_token!((token.kind()) {
             TokenKind::Ident => ast::Ident { name: token.string() },
         })
     }
 
-    pub fn except_token(&mut self, kind: TokenKind) -> Result<()> {
+    pub fn expect_token(&mut self, kind: TokenKind) -> Result<()> {
         let token = self.next_solid_token();
         if kind == token.kind() {
             Ok(())
@@ -112,7 +112,7 @@ impl<'c> TokenSeq<'c> {
         }
     }
 
-    pub fn except_literal(&mut self) -> Result<ast::Literal<'c>> {
+    pub fn expect_literal(&mut self) -> Result<ast::Literal<'c>> {
         let token = self.next_solid_token();
         match_token!((token.kind()) {
             TokenKind::IntegerLiteral => {
@@ -127,7 +127,7 @@ impl<'c> TokenSeq<'c> {
         })
     }
 
-    pub fn except_end(&mut self) -> Result<()> {
+    pub fn expect_end(&mut self) -> Result<()> {
         match_token!((self.current_token().kind()) {
             TokenKind::LineBreak => (),
             TokenKind::Eof => (),

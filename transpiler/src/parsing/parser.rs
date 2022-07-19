@@ -18,18 +18,18 @@ impl<'c> Parser<'c> {
     }
 
     fn parse_variable(&mut self) -> Result<stmt::VariableDeclaration<'c>> {
-        let variable_type = self.seq.except_type()?;
-        let variable_name = self.seq.except_ident()?;
-        self.seq.except_token(TokenKind::Assign)?;
-        let literal = self.seq.except_literal()?;
-        self.seq.except_end()?;
+        let variable_type = self.seq.expect_type()?;
+        let variable_name = self.seq.expect_ident()?;
+        self.seq.expect_token(TokenKind::Assign)?;
+        let literal = self.seq.expect_literal()?;
+        self.seq.expect_end()?;
         Ok(stmt::VariableDeclaration::new(variable_type, variable_name, literal))
     }
 
     fn parse_function_call(&mut self) -> Result<stmt::FunctionCall<'c>> {
-        let function_name = self.seq.except_ident()?;
+        let function_name = self.seq.expect_ident()?;
 
-        self.seq.except_token(TokenKind::ParenOpen)?;
+        self.seq.expect_token(TokenKind::ParenOpen)?;
         let mut args = Vec::new();
         let mut first = true;
         loop {
@@ -48,11 +48,11 @@ impl<'c> Parser<'c> {
                 // ... ...
                 _ => return Err(ParsingError::new(kind, [TokenKind::Sep, TokenKind::ParenClose])),
             }
-            let literal = self.seq.except_literal()?;
+            let literal = self.seq.expect_literal()?;
             args.push(literal);
         }
 
-        self.seq.except_end()?;
+        self.seq.expect_end()?;
 
         Ok(stmt::FunctionCall::new(function_name, args))
     }
@@ -66,11 +66,11 @@ impl<'c> Parser<'c> {
     }
 
     fn parse_function(&mut self) -> Result<ast::FunctionDeclaration<'c>> {
-        let return_type = self.seq.except_type_or_void()?;
-        let function_name = self.seq.except_ident()?;
+        let return_type = self.seq.expect_type_or_void()?;
+        let function_name = self.seq.expect_ident()?;
 
         // parse args
-        self.seq.except_token(TokenKind::ParenOpen)?;
+        self.seq.expect_token(TokenKind::ParenOpen)?;
         let mut args = Vec::<ast::FunctionArg>::new();
         let mut first = true;
         loop {
@@ -84,15 +84,15 @@ impl<'c> Parser<'c> {
                 _ if first => {}
                 _ => return Err(ParsingError::new(kind, [TokenKind::Sep])),
             }
-            let arg_type = self.seq.except_type()?;
-            let arg_name = self.seq.except_ident()?;
+            let arg_type = self.seq.expect_type()?;
+            let arg_name = self.seq.expect_ident()?;
             let arg = ast::FunctionArg::new(arg_type, arg_name);
             args.push(arg);
             first = false;
         }
 
         // parse body
-        self.seq.except_token(TokenKind::BraceOpen)?;
+        self.seq.expect_token(TokenKind::BraceOpen)?;
         let mut stmts = Vec::new();
         loop {
             let token = self.seq.solid_token();
@@ -104,7 +104,7 @@ impl<'c> Parser<'c> {
             stmts.push(stmt);
         }
 
-        self.seq.except_end()?;
+        self.seq.expect_end()?;
 
         return Ok(ast::FunctionDeclaration::new(return_type, function_name, args, stmts));
     }

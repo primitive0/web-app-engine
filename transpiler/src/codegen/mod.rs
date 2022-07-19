@@ -119,7 +119,7 @@ fn generate_main_function(code: &mut CodeBuf, decl: &ast::FunctionDeclaration) {
                 let mut args = func_call.args().iter();
                 let string = match args.next().unwrap() {
                     Literal::String(s) => *s,
-                    Literal::Integer(_) => panic!("string literal excepted"),
+                    Literal::Integer(_) => panic!("string literal expected"),
                 };
                 assert!(args.next().is_none(), "only one arg expected");
 
