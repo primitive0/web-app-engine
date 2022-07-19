@@ -110,16 +110,17 @@ impl<'c> TokenSeq<'c> {
         }
     }
 
+    // TODO: change error handling here
     pub fn expect_literal(&mut self) -> Result<ast::Literal<'c>> {
         let token = self.next_solid_token();
         match_token!((token.kind()) {
             TokenKind::IntegerLiteral => {
-                let value = token.string().parse::<i32>().expect("failed to parse literal");
+                let value = token.string().parse::<i32>().expect("failed to parse integer literal");
                 ast::Literal::integer(value)
             },
             TokenKind::StringLiteral => {
                 let string = token.string();
-                let value = string.get(1..(string.len() - 1)).expect("..."); // TODO
+                let value = string.get(1..(string.len() - 1)).expect("failed to parse string literal");
                 ast::Literal::string(value)
             },
         })
