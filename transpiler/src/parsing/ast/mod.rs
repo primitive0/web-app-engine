@@ -37,17 +37,6 @@ impl<'a> PartialEq<&str> for Ident<'a> {
     }
 }
 
-// #[derive(Copy, Clone, Debug)]
-// pub struct IntegerLiteral {
-//     pub value: i32,
-// }
-//
-// impl IntegerLiteral {
-//     pub fn new(value: i32) -> IntegerLiteral {
-//         IntegerLiteral { value }
-//     }
-// }
-
 #[derive(Copy, Clone, Debug)]
 pub enum Literal<'a> {
     Integer(i32),

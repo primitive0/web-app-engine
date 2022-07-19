@@ -1,6 +1,6 @@
-use crate::parser::ast;
-use crate::parser::ast::Literal;
-use crate::parser::ast::stmt::Statement;
+use crate::parsing::ast;
+use crate::parsing::ast::stmt::Statement;
+use crate::parsing::ast::Literal;
 
 // fn lang_type_to_c_type<'a>(type_: ast::Type<'a>) -> &'static str {
 //     match type_ {
@@ -36,9 +36,7 @@ struct CodeBuf {
 
 impl CodeBuf {
     fn new() -> CodeBuf {
-        CodeBuf {
-            content: String::new(),
-        }
+        CodeBuf { content: String::new() }
     }
 
     fn push_function_decl(&mut self, return_type: &str, name: &str) {
@@ -112,7 +110,7 @@ fn generate_main_function(code: &mut CodeBuf, decl: &ast::FunctionDeclaration) {
     for stmt in decl.stmts() {
         code.push_spaces(4);
         match stmt {
-            Statement::VariableDeclaration(var_decl) => todo!("not supported yet"),
+            Statement::VariableDeclaration(_) => todo!("not supported yet"),
             Statement::FunctionCall(func_call) => {
                 if func_call.name() != "print" {
                     todo!("other functions are not supported yet");
@@ -142,42 +140,3 @@ fn generate_main_function(code: &mut CodeBuf, decl: &ast::FunctionDeclaration) {
     code.push_code_block_close();
     code.push_linebreak();
 }
-
-//
-// fn push_spaces(code: &mut String, count: usize) {
-//     code.extend((0..count).map(|_| ' '));
-// }
-//
-// fn push_code_block_open(code: &mut String) {
-//     code.push_str("{");
-// }
-//
-// fn push_code_block_close(code: &mut String) {
-//     code.push_str("}");
-// }
-//
-// fn push_variable_decl(code: &mut String, var_type: &str, name: &str) {
-//     code.push_str(var_type);
-//     code.push_str(" ");
-//     code.push_str(name);
-// }
-//
-// fn push_variable_assign(code: &mut String, value: i32) {
-//     code.push_str("= ");
-//     // TODO: replace
-//     code.push_str(value.to_string().as_str());
-// }
-//
-// fn push_semicolon(code: &mut String) {
-//     code.push_str(";");
-// }
-//
-// fn push_linebreak(code: &mut String) {
-//     code.push_str("\n");
-// }
-//
-// fn push_function_return(code: &mut String, value: &str) {
-//     code.push_str("return ");
-//     code.push_str(value);
-//     code.push_str(";");
-// }

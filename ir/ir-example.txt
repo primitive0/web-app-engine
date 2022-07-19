@@ -1,0 +1,16 @@
+declare function main {
+    args: ();
+    returns: void;
+    body: {
+        0: VarDecl { name: "foo"; value: IntValue(42) };
+        1: Call { function: println; args: (0) }
+    }
+}
+
+declare function println {
+    args: (
+        Arg { name: "value"; type: AnyType; marker: ( In ) }
+    );
+    returns: void;
+    builtin: true
+}
