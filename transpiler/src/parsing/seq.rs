@@ -1,9 +1,9 @@
-use std::iter;
 use super::{
     ast,
     error::{ParsingError, Result},
 };
 use crate::lexer::{Lexer, Token, TokenKind};
+use std::iter;
 
 macro_rules! match_token {
     ( ($expr:expr) { $( $variant:path => $branch:expr),* $(,)? } ) => {
@@ -77,8 +77,7 @@ impl<'c> TokenSeq<'c> {
 
     pub fn expect_type(&mut self) -> Result<ast::Type<'c>> {
         let token = self.next_solid_token();
-        token_to_type(token)
-            .ok_or(ParsingError::new(token.kind(), TYPE_TOKENS_EXPECTED))
+        token_to_type(token).ok_or(ParsingError::new(token.kind(), TYPE_TOKENS_EXPECTED))
     }
 
     pub fn expect_type_or_void(&mut self) -> Result<ast::TypeOrVoid<'c>> {
@@ -88,10 +87,9 @@ impl<'c> TokenSeq<'c> {
             None => match token.kind() {
                 TokenKind::KeywordVoid => Ok(ast::TypeOrVoid::Void),
                 _ => {
-                    let expected = TYPE_TOKENS_EXPECTED.into_iter()
-                        .chain(iter::once(TokenKind::KeywordVoid));
+                    let expected = TYPE_TOKENS_EXPECTED.into_iter().chain(iter::once(TokenKind::KeywordVoid));
                     Err(ParsingError::new(token.kind(), expected))
-                },
+                }
             },
         }
     }

@@ -51,7 +51,7 @@ macro_rules! token_matcher {
             fn check($check_buf:tt : &str, $check_char_count:tt : usize, $check_character:tt : char) -> bool $check_body:block
             fn emit($emit_buf:tt : &str) -> Token $emit_body:block
         }
-       ),* ) => {
+       ),* $(,)? ) => {
         #[derive(Eq, PartialEq, Copy, Clone, Debug)]
         pub enum TokenMatcher {
             Reset,
@@ -195,5 +195,5 @@ token_matcher! {
         fn emit(buf: &str) -> Token {
             Token::of(TokenKind::Sep, buf)
         }
-    }
+    },
 }

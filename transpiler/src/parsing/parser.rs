@@ -5,6 +5,7 @@ use super::{
 };
 use crate::lexer::{Lexer, TokenKind, TOKEN_EOF};
 use ast::stmt;
+use std::fmt::Debug;
 
 pub struct Parser<'c> {
     seq: TokenSeq<'c>,
@@ -15,6 +16,63 @@ impl<'c> Parser<'c> {
         Parser {
             seq: TokenSeq::new(lexer),
         }
+    }
+
+    pub fn parse(&mut self) -> Result<ast::AST<'c>> {
+        let mut declarations = Vec::new();
+        loop {
+            let token = self.seq.solid_token();
+            if token == TOKEN_EOF {
+                return Ok(ast::AST::new(declarations));
+            }
+            let declaration = self.parse_function()?;
+            declarations.push(declaration);
+        }
+    }
+
+    fn parse_until<N, F>(&mut self, needle: TokenKind, parse: F) -> Result<Vec<N>>
+    where
+        F: Fn(&mut Parser<'c>) -> Result<N>,
+    {
+        let mut result = Vec::<N>::new();
+        loop {
+            let token = self.seq.solid_token();
+            if token.kind() == needle {
+                self.seq.go_next();
+                break;
+            }
+            let node = parse(self)?;
+            result.push(node);
+        }
+        Ok(result)
+    }
+
+    fn parse_list<N, F>(&mut self, needle: TokenKind, parse: F) -> Result<Vec<N>>
+    where
+        F: Fn(&mut Parser<'c>) -> Result<N>,
+    {
+        debug_assert!(needle != TokenKind::Sep);
+
+        let mut result = Vec::<N>::new();
+        let mut first = true;
+        loop {
+            let kind = self.seq.solid_token().kind();
+            if kind == needle {
+                self.seq.go_next();
+                break;
+            }
+            if !first {
+                if kind == TokenKind::Sep {
+                    self.seq.go_next();
+                } else {
+                    return Err(ParsingError::new(kind, [TokenKind::Sep, needle]));
+                }
+            }
+            let node = parse(self)?;
+            result.push(node);
+            first = false;
+        }
+        Ok(result)
     }
 
     fn parse_variable(&mut self) -> Result<stmt::VariableDeclaration<'c>> {
@@ -30,28 +88,7 @@ impl<'c> Parser<'c> {
         let function_name = self.seq.expect_ident()?;
 
         self.seq.expect_token(TokenKind::ParenOpen)?;
-        let mut args = Vec::new();
-        let mut first = true;
-        loop {
-            let kind = self.seq.solid_token().kind();
-            match kind {
-                // )
-                TokenKind::ParenClose => {
-                    self.seq.go_next();
-                    break;
-                }
-                // ...,
-                TokenKind::Sep if !first => self.seq.go_next(),
-                // (...
-                // TokenKind::Sep if first => Err()
-                _ if first => {}
-                // ... ...
-                _ => return Err(ParsingError::new(kind, [TokenKind::Sep, TokenKind::ParenClose])),
-            }
-            let literal = self.seq.expect_literal()?;
-            args.push(literal);
-        }
-
+        let args = self.parse_list(TokenKind::ParenClose, |parser| parser.seq.expect_literal())?;
         self.seq.expect_end()?;
 
         Ok(stmt::FunctionCall::new(function_name, args))
@@ -71,53 +108,17 @@ impl<'c> Parser<'c> {
 
         // parse args
         self.seq.expect_token(TokenKind::ParenOpen)?;
-        let mut args = Vec::<ast::FunctionArg>::new();
-        let mut first = true;
-        loop {
-            let kind = self.seq.solid_token().kind();
-            match kind {
-                TokenKind::ParenClose => {
-                    self.seq.go_next();
-                    break;
-                }
-                TokenKind::Sep if !first => self.seq.go_next(),
-                _ if first => {}
-                _ => return Err(ParsingError::new(kind, [TokenKind::Sep])),
-            }
-            let arg_type = self.seq.expect_type()?;
-            let arg_name = self.seq.expect_ident()?;
-            let arg = ast::FunctionArg::new(arg_type, arg_name);
-            args.push(arg);
-            first = false;
-        }
-
+        let mut args = self.parse_list(TokenKind::ParenClose, |parser| {
+            let arg_type = parser.seq.expect_type()?;
+            let arg_name = parser.seq.expect_ident()?;
+            Ok(ast::FunctionArg::new(arg_type, arg_name))
+        })?;
         // parse body
         self.seq.expect_token(TokenKind::BraceOpen)?;
-        let mut stmts = Vec::new();
-        loop {
-            let token = self.seq.solid_token();
-            if token.kind() == TokenKind::BraceClose {
-                self.seq.go_next();
-                break;
-            }
-            let stmt = self.parse_statement()?;
-            stmts.push(stmt);
-        }
+        let mut stmts = self.parse_until(TokenKind::BraceClose, |parser| parser.parse_statement())?;
 
         self.seq.expect_end()?;
 
         return Ok(ast::FunctionDeclaration::new(return_type, function_name, args, stmts));
-    }
-
-    pub fn parse(&mut self) -> Result<ast::AST<'c>> {
-        let mut declarations = Vec::new();
-        loop {
-            let token = self.seq.solid_token();
-            if token == TOKEN_EOF {
-                return Ok(ast::AST::new(declarations));
-            }
-            let declaration = self.parse_function()?;
-            declarations.push(declaration);
-        }
     }
 }

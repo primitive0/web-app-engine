@@ -1,3 +1,4 @@
+extern crate core;
 extern crate smallvec;
 
 mod codegen;
@@ -5,10 +6,10 @@ mod ir;
 mod lexer;
 mod parsing;
 
+use crate::lexer::TokenKind;
 use lexer::{Lexer, TOKEN_EOF};
 use std::env;
 use std::fs;
-use crate::lexer::TokenKind;
 
 fn main() {
     let mut args = env::args().skip(1);
@@ -18,7 +19,13 @@ fn main() {
     let to_parse = fs::read_to_string(file_to_parse).expect("failed to read file");
 
     let mut lexer = Lexer::new(to_parse.as_str());
-    let ast = parsing::build_ast(lexer).unwrap();
+    let ast = match parsing::build_ast(lexer) {
+        Ok(ast) => ast,
+        Err(err) => {
+            println!("error parsing code: {}", err);
+            return;
+        }
+    };
 
     let code = codegen::generate_c_code(&ast);
     fs::write(out_file, code).expect("failed to write into file");
