@@ -5,7 +5,19 @@ pub enum TokenKind {
     Spaces,
     LineBreak,
     KeywordVoid,
+    KeywordByte,
+    KeywordShort,
+    KeywordUnsignedShort,
     KeywordInt,
+    KeywordUnsignedInt,
+    KeywordLong,
+    KeywordUnsignedLong,
+    KeywordDouble,
+    KeywordFinancial,
+    KeywordBool,
+    KeywordString,
+    KeywordRune,
+    KeywordDyn,
     Ident,
     Assign,
     IntegerLiteral,
@@ -97,7 +109,7 @@ const fn is_line_break(char: char) -> bool {
 token_matcher! {
     Spaces => {
         fn check(_: &str, _: usize, char: char) -> bool {
-            char == ' '
+            char == ' ' || char == '\t'
         }
         fn emit(buf: &str) -> Token {
             Token::of(TokenKind::Spaces, buf)
@@ -122,7 +134,19 @@ token_matcher! {
         fn emit(buf: &str) -> Token {
             let kind = match buf {
                 "void" => TokenKind::KeywordVoid,
+                "byte" => TokenKind::KeywordByte,
+                "short" => TokenKind::KeywordShort,
+                "ushort" => TokenKind::KeywordUnsignedShort,
                 "int" => TokenKind::KeywordInt,
+                "uint" => TokenKind::KeywordUnsignedInt,
+                "long" => TokenKind::KeywordLong,
+                "ulong" => TokenKind::KeywordUnsignedLong,
+                "double" => TokenKind::KeywordDouble,
+                "bool" => TokenKind::KeywordBool,
+                "financial" => TokenKind::KeywordFinancial,
+                "string" => TokenKind::KeywordString,
+                "rune" => TokenKind::KeywordRune,
+                "dyn" => TokenKind::KeywordDyn,
                 _ => TokenKind::Ident,
             };
             Token::of(kind, buf)

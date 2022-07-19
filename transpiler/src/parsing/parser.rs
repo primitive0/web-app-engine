@@ -5,7 +5,6 @@ use super::{
 };
 use crate::lexer::{Lexer, TokenKind, TOKEN_EOF};
 use ast::stmt;
-use std::fmt::Debug;
 
 pub struct Parser<'c> {
     seq: TokenSeq<'c>,
@@ -108,14 +107,14 @@ impl<'c> Parser<'c> {
 
         // parse args
         self.seq.expect_token(TokenKind::ParenOpen)?;
-        let mut args = self.parse_list(TokenKind::ParenClose, |parser| {
+        let args = self.parse_list(TokenKind::ParenClose, |parser| {
             let arg_type = parser.seq.expect_type()?;
             let arg_name = parser.seq.expect_ident()?;
             Ok(ast::FunctionArg::new(arg_type, arg_name))
         })?;
         // parse body
         self.seq.expect_token(TokenKind::BraceOpen)?;
-        let mut stmts = self.parse_until(TokenKind::BraceClose, |parser| parser.parse_statement())?;
+        let stmts = self.parse_until(TokenKind::BraceClose, |parser| parser.parse_statement())?;
 
         self.seq.expect_end()?;
 

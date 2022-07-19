@@ -19,7 +19,7 @@ pub fn generate_c_code(tree: &ast::AST) -> String {
     for decl in tree.declarations() {
         if decl.name() == "main" && decl.return_type() == ast::TypeOrVoid::Void {
             main_function_found = true;
-            generate_main_function(&mut buf, &decl);
+            generate_main_function(&mut buf, decl);
             break;
         }
     }

@@ -43,6 +43,8 @@ impl<'c> Lexer<'c> {
         self.char_count = 0;
     }
 
+    // looks better without collapsing
+    #[allow(clippy::collapsible_else_if)]
     pub fn next(&mut self) -> Result<Token<'c>, TokenMatcherNotFound> {
         while let Some(char) = self.next_char() {
             if self.matcher.check(self.buf(), self.char_count, char) {

@@ -77,7 +77,7 @@ impl<'c> TokenSeq<'c> {
 
     pub fn expect_type(&mut self) -> Result<ast::Type<'c>> {
         let token = self.next_solid_token();
-        token_to_type(token).ok_or(ParsingError::new(token.kind(), TYPE_TOKENS_EXPECTED))
+        token_to_type(token).ok_or_else(|| ParsingError::new(token.kind(), TYPE_TOKENS_EXPECTED))
     }
 
     pub fn expect_type_or_void(&mut self) -> Result<ast::TypeOrVoid<'c>> {

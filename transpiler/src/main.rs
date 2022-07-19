@@ -1,3 +1,5 @@
+#![allow(clippy::needless_return)]
+
 extern crate core;
 extern crate smallvec;
 
@@ -6,8 +8,7 @@ mod ir;
 mod lexer;
 mod parsing;
 
-use crate::lexer::TokenKind;
-use lexer::{Lexer, TOKEN_EOF};
+use lexer::Lexer;
 use std::env;
 use std::fs;
 
@@ -18,7 +19,7 @@ fn main() {
 
     let to_parse = fs::read_to_string(file_to_parse).expect("failed to read file");
 
-    let mut lexer = Lexer::new(to_parse.as_str());
+    let lexer = Lexer::new(to_parse.as_str());
     let ast = match parsing::build_ast(lexer) {
         Ok(ast) => ast,
         Err(err) => {

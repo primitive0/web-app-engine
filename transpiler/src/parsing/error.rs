@@ -2,7 +2,6 @@ use crate::lexer::TokenKind;
 use smallvec::SmallVec;
 use std::error;
 use std::fmt;
-use std::fmt::Write;
 
 #[derive(Debug)]
 pub struct ParsingError {
